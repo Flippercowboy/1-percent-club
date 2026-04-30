@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>1% Club</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:         #07090f;
+      --bg-card:    #111827;
+      --bg-surface: #1f2937;
+      --gold:       #f5c518;
+      --blue:       #60a5fa;
+      --green:      #22c55e;
+      --red:        #ef4444;
+      --text:       #f1f5f9;
+      --text-dim:   #94a3b8;
+      --border:     rgba(255,255,255,0.08);
+      --radius:     14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      display: none;
+      flex-direction: column;
+      min-height: 100vh;
+      min-height: 100dvh;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    .screen.active { display: flex; }
+
+    /* ── LOGO ── */
+    .logo-block { text-align: center; margin-bottom: 2rem; padding-top: 1rem; }
+    .logo-pct   { font-size: 3.5rem; font-weight: 900; color: var(--gold); line-height: 1; }
+    .logo-sub   { font-size: 0.75rem; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
+
+    /* ── FORM ── */
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.4rem;
+    }
+    .form-group input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 0.85rem 1rem;
+      font-family: inherit;
+      font-size: 1.1rem;
+      font-weight: 600;
+      transition: border-color 0.15s;
+    }
+    .form-group input:focus { outline: none; border-color: var(--gold); }
+    #code-input {
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      font-size: 1.4rem;
+      text-align: center;
+      font-family: monospace;
+    }
+
+    .error-msg {
+      color: var(--red);
+      font-size: 0.85rem;
+      text-align: center;
+      margin: 0.5rem 0;
+      min-height: 1.2em;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 1rem;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-bottom: 0.75rem;
+    }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-primary { background: var(--gold); color: #000; }
+    .btn-primary:not(:disabled):hover { background: #ffd700; }
+    .btn-secondary { background: var(--bg-surface); color: var(--text); border: 2px solid var(--border); }
+
+    /* ── ANSWER BUTTONS ── */
+    .answer-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      width: 100%;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      padding: 1rem 1.1rem;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      margin-bottom: 0.75rem;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .answer-btn:not(:disabled):hover { border-color: var(--gold); background: rgba(245,197,24,0.05); }
+    .answer-btn:disabled { cursor: default; }
+    .answer-btn.selected { border-color: var(--blue); background: rgba(96,165,250,0.08); }
+    .answer-label {
+      background: var(--bg-surface);
+      border-radius: 8px;
+      width: 2.25rem;
+      height: 2.25rem;
+      min-width: 2.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: var(--gold);
+      font-size: 0.95rem;
+    }
+    .answer-btn.selected .answer-label { background: var(--blue); color: #000; }
+
+    /* ── CENTER STATUS LAYOUTS ── */
+    .center-fill {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 1rem;
+      padding: 1rem 0;
+    }
+
+    .big-icon    { font-size: 4.5rem; line-height: 1; }
+    .status-h    { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+    .status-sub  { color: var(--text-dim); font-size: 0.95rem; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 3rem; height: 3rem;
+      border: 3px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes pulse { 0%,100%{ opacity:1 } 50%{ opacity:0.3 } }
+    .pulse { animation: pulse 2s ease-in-out infinite; }
+
+    /* ── RESULT CARDS ── */
+    .result-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 2rem 1.5rem;
+      width: 100%;
+      text-align: center;
+      border: 2px solid var(--border);
+    }
+    .result-card.correct { border-color: var(--green); }
+    .result-card.wrong   { border-color: var(--red); }
+
+    /* ── QUESTION SCREEN ── */
+    .q-header { margin-bottom: 1.5rem; }
+    .q-meta   { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+    .q-num-label { font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+    .q-pct-pill  { background: var(--gold); color: #000; font-weight: 700; font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 99px; }
+    .q-text      { font-size: 1.2rem; font-weight: 700; line-height: 1.45; }
+
+    .name-footer { margin-top: auto; padding-top: 1rem; font-size: 0.85rem; color: var(--text-dim); text-align: center; }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════ JOIN ══════════════ -->
+  <div id="screen-join" class="screen active">
+    <div class="logo-block">
+      <div class="logo-pct">1%</div>
+      <div class="logo-sub">Club</div>
+    </div>
+    <div class="form-group">
+      <label>Game Code</label>
+      <input id="code-input" type="text" placeholder="ABC123" maxlength="6" autocomplete="off" spellcheck="false" autocapitalize="characters">
+    </div>
+    <div class="form-group">
+      <label>Your Name</label>
+      <input id="name-input" type="text" placeholder="Enter your name" maxlength="20" autocomplete="off">
+    </div>
+    <div class="error-msg" id="join-error"></div>
+    <button class="btn btn-primary" id="btn-join" onclick="joinGame()">Join Game</button>
+  </div>
+
+  <!-- ══════════════ LOBBY ══════════════ -->
+  <div id="screen-lobby" class="screen">
+    <div class="center-fill">
+      <div class="big-icon pulse">🎮</div>
+      <div class="status-h" id="lobby-greeting">You're in!</div>
+      <div class="status-sub">Waiting for the host to start the game…</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ QUESTION ══════════════ -->
+  <div id="screen-question" class="screen">
+    <div class="q-header">
+      <div class="q-meta">
+        <span class="q-num-label" id="pq-progress"></span>
+        <span class="q-pct-pill"  id="pq-pct"></span>
+      </div>
+      <div class="q-text" id="pq-text"></div>
+    </div>
+    <div id="answer-buttons"></div>
+    <div class="name-footer" id="pq-name"></div>
+  </div>
+
+  <!-- ══════════════ ANSWERED (waiting) ══════════════ -->
+  <div id="screen-answered" class="screen">
+    <div class="center-fill">
+      <div class="spinner"></div>
+      <div class="status-h">Answer locked in!</div>
+      <div class="status-sub">Waiting for the host to reveal the answer…</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ REVEAL: CORRECT ══════════════ -->
+  <div id="screen-reveal-correct" class="screen">
+    <div class="center-fill">
+      <div class="result-card correct">
+        <div class="big-icon">✅</div>
+        <div class="status-h" style="color:var(--green);margin-top:0.75rem;">Correct!</div>
+        <div class="status-sub" style="margin-top:0.5rem;">You're still in the game!</div>
+      </div>
+      <div class="status-sub pulse" style="margin-top:1rem;">Waiting for the next question…</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ REVEAL: WRONG / ELIMINATED ══════════════ -->
+  <div id="screen-reveal-wrong" class="screen">
+    <div class="center-fill">
+      <div class="result-card wrong">
+        <div class="big-icon">❌</div>
+        <div class="status-h" style="color:var(--red);margin-top:0.75rem;" id="wrong-title">Eliminated!</div>
+        <div class="status-sub" style="margin-top:0.5rem;" id="wrong-sub">The correct answer was:</div>
+        <div style="font-size:1.4rem;font-weight:700;margin-top:0.6rem;color:var(--green);" id="correct-answer-text"></div>
+      </div>
+      <div class="status-sub" style="margin-top:1rem;">You can still watch the rest of the game</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SPECTATOR ══════════════ -->
+  <div id="screen-spectator" class="screen">
+    <div class="center-fill">
+      <div class="big-icon">👀</div>
+      <div class="status-h" style="color:var(--text-dim);">Spectating</div>
+      <div class="status-sub">You've been eliminated but you can watch along</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ FINISHED ══════════════ -->
+  <div id="screen-finished" class="screen">
+    <div class="center-fill">
+      <div class="big-icon" id="p-finish-icon">🏆</div>
+      <div class="status-h"  id="p-finish-title">Game Over!</div>
+      <div class="status-sub" id="p-finish-sub"></div>
+      <button class="btn btn-secondary" style="margin-top:2rem;width:auto;padding:0.75rem 2rem;" onclick="resetPlayer()">
+        Play Again
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    // ── DB CLIENT ──────────────────────────────────────────
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ── STATE ──────────────────────────────────────────────
+    let gameId           = null;
+    let playerId         = null;
+    let playerName       = '';
+    let playerEliminated = false;
+    let currentQuestion  = null;
+    let selectedAnswer   = null;
+    let channels         = [];
+
+    const LABELS = ['A', 'B', 'C', 'D'];
+
+    // ── HELPERS ────────────────────────────────────────────
+    function showScreen(name) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + name).classList.add('active');
+    }
+
+    function setError(msg) {
+      document.getElementById('join-error').textContent = msg;
+    }
+
+    function clearChannels() {
+      channels.forEach(ch => ch.unsubscribe());
+      channels = [];
+    }
+
+    // ── INIT ───────────────────────────────────────────────
+    async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const code   = params.get('code');
+      if (code) {
+        document.getElementById('code-input').value = code.toUpperCase();
+        document.getElementById('name-input').focus();
+      }
+
+      const savedPlayerId = localStorage.getItem('player_id');
+      const savedGameId   = localStorage.getItem('player_game_id');
+      const savedName     = localStorage.getItem('player_name') || '';
+
+      if (savedPlayerId && savedGameId) {
+        try {
+          await resumePlayer(savedPlayerId, savedGameId, savedName);
+          return;
+        } catch (e) {
+          localStorage.removeItem('player_id');
+          localStorage.removeItem('player_game_id');
+          localStorage.removeItem('player_name');
+        }
+      }
+
+      showScreen('join');
+    }
+
+    // ── JOIN ───────────────────────────────────────────────
+    async function joinGame() {
+      const code = document.getElementById('code-input').value.trim().toUpperCase();
+      const name = document.getElementById('name-input').value.trim();
+      setError('');
+
+      if (code.length < 4)  { setError('Please enter the game code.'); return; }
+      if (!name)            { setError('Please enter your name.'); return; }
+
+      const btn = document.getElementById('btn-join');
+      btn.disabled    = true;
+      btn.textContent = 'Joining…';
+
+      try {
+        const { data: g, error: gErr } = await db.from('games')
+          .select('id, status')
+          .eq('game_code', code)
+          .single();
+
+        if (gErr || !g)            { setError('Game not found. Check the code and try again.'); return; }
+        if (g.status !== 'lobby')  { setError('This game has already started — you cannot join now.'); return; }
+
+        const { data: dup } = await db.from('players')
+          .select('id')
+          .eq('game_id', g.id)
+          .eq('name', name)
+          .maybeSingle();
+        if (dup) { setError('That name is already taken — choose another.'); return; }
+
+        const { data: player, error: pErr } = await db.from('players')
+          .insert({ game_id: g.id, name })
+          .select()
+          .single();
+
+        if (pErr) { setError('Could not join. Please try again.'); return; }
+
+        gameId           = g.id;
+        playerId         = player.id;
+        playerName       = name;
+        playerEliminated = false;
+
+        localStorage.setItem('player_id',      playerId);
+        localStorage.setItem('player_game_id', gameId);
+        localStorage.setItem('player_name',    playerName);
+
+        document.getElementById('lobby-greeting').textContent = `You're in, ${playerName}!`;
+        subscribeToGame();
+        showScreen('lobby');
+
+      } finally {
+        btn.disabled    = false;
+        btn.textContent = 'Join Game';
+      }
+    }
+
+    // ── SUBSCRIPTIONS ──────────────────────────────────────
+    function subscribeToGame() {
+      const ch = db.channel('player-game-' + gameId)
+        .on('postgres_changes', {
+          event: 'UPDATE', schema: 'public', table: 'games',
+          filter: 'id=eq.' + gameId
+        }, handleGameUpdate)
+        .subscribe();
+      channels.push(ch);
+    }
+
+    async function handleGameUpdate(payload) {
+      const g = payload.new;
+
+      if (g.status === 'question') {
+        selectedAnswer = null;
+
+        const { data: q } = await db.from('questions')
+          .select()
+          .eq('game_id', gameId)
+          .eq('question_index', g.current_question_index)
+          .single();
+
+        currentQuestion = q;
+
+        if (playerEliminated) {
+          showScreen('spectator');
+        } else {
+          renderQuestion(q);
+          showScreen('question');
+        }
+
+      } else if (g.status === 'reveal') {
+        handleReveal();
+
+      } else if (g.status === 'finished') {
+        handleFinished();
+      }
+    }
+
+    // ── QUESTION ───────────────────────────────────────────
+    function renderQuestion(q) {
+      document.getElementById('pq-progress').textContent = `Question ${q.question_index + 1}`;
+      document.getElementById('pq-pct').textContent      = q.percentage + ' get this right';
+      document.getElementById('pq-text').textContent     = q.text;
+      document.getElementById('pq-name').textContent     = playerName;
+
+      const container = document.getElementById('answer-buttons');
+      container.innerHTML = q.options.map((opt, i) => `
+        <button class="answer-btn" data-answer="${opt.replace(/"/g, '&quot;')}">
+          <span class="answer-label">${LABELS[i]}</span>
+          <span>${opt}</span>
+        </button>
+      `).join('');
+
+      container.querySelectorAll('.answer-btn').forEach(btn => {
+        btn.addEventListener('click', () => selectAnswer(btn));
+      });
+    }
+
+    async function selectAnswer(btn) {
+      if (selectedAnswer !== null) return;
+
+      selectedAnswer = btn.dataset.answer;
+
+      document.querySelectorAll('.answer-btn').forEach(b => {
+        b.disabled = true;
+        if (b === btn) b.classList.add('selected');
+      });
+
+      await db.from('answers').insert({
+        game_id:     gameId,
+        player_id:   playerId,
+        question_id: currentQuestion.id,
+        answer:      selectedAnswer,
+      });
+
+      showScreen('answered');
+    }
+
+    // ── REVEAL ─────────────────────────────────────────────
+    function handleReveal() {
+      if (!currentQuestion) return;
+
+      // Already eliminated from a previous round — stay in spectator view
+      if (playerEliminated) {
+        showScreen('spectator');
+        return;
+      }
+
+      const isCorrect = selectedAnswer !== null && selectedAnswer === currentQuestion.correct_answer;
+
+      if (isCorrect) {
+        showScreen('reveal-correct');
+      } else {
+        playerEliminated = true;
+
+        document.getElementById('wrong-title').textContent = selectedAnswer
+          ? 'Wrong — Eliminated!'
+          : "Time's up — Eliminated!";
+        document.getElementById('wrong-sub').textContent = selectedAnswer
+          ? 'The correct answer was:'
+          : "You didn't answer. The correct answer was:";
+        document.getElementById('correct-answer-text').textContent = currentQuestion.correct_answer;
+
+        showScreen('reveal-wrong');
+      }
+    }
+
+    // ── FINISHED ───────────────────────────────────────────
+    function handleFinished() {
+      clearChannels();
+      localStorage.removeItem('player_id');
+      localStorage.removeItem('player_game_id');
+      localStorage.removeItem('player_name');
+
+      const icon  = document.getElementById('p-finish-icon');
+      const title = document.getElementById('p-finish-title');
+      const sub   = document.getElementById('p-finish-sub');
+
+      if (!playerEliminated) {
+        icon.textContent  = '🏆';
+        title.textContent = 'You made it!';
+        sub.textContent   = `Congratulations ${playerName} — you survived every question!`;
+      } else {
+        icon.textContent  = '👏';
+        title.textContent = 'Game Over';
+        sub.textContent   = `Well played, ${playerName}. Better luck next time!`;
+      }
+
+      showScreen('finished');
+    }
+
+    // ── RESUME ─────────────────────────────────────────────
+    async function resumePlayer(pid, gid, name) {
+      const [{ data: player }, { data: game }] = await Promise.all([
+        db.from('players').select().eq('id', pid).single(),
+        db.from('games').select().eq('id', gid).single(),
+      ]);
+
+      if (!player || !game || game.status === 'finished') throw new Error('Cannot resume');
+
+      playerId         = player.id;
+      gameId           = game.id;
+      playerName       = name || player.name;
+      playerEliminated = player.eliminated;
+
+      document.getElementById('lobby-greeting').textContent = `You're in, ${playerName}!`;
+      subscribeToGame();
+
+      if (game.status === 'lobby') {
+        showScreen('lobby');
+
+      } else if (game.status === 'question') {
+        const { data: q } = await db.from('questions')
+          .select()
+          .eq('game_id', gameId)
+          .eq('question_index', game.current_question_index)
+          .single();
+
+        currentQuestion = q;
+
+        if (playerEliminated) {
+          showScreen('spectator');
+        } else {
+          const { data: ans } = await db.from('answers')
+            .select()
+            .eq('player_id', playerId)
+            .eq('question_id', q.id)
+            .maybeSingle();
+
+          if (ans) {
+            selectedAnswer = ans.answer;
+            showScreen('answered');
+          } else {
+            renderQuestion(q);
+            showScreen('question');
+          }
+        }
+
+      } else if (game.status === 'reveal') {
+        const { data: q } = await db.from('questions')
+          .select()
+          .eq('game_id', gameId)
+          .eq('question_index', game.current_question_index)
+          .single();
+
+        currentQuestion = q;
+
+        const { data: ans } = await db.from('answers')
+          .select()
+          .eq('player_id', playerId)
+          .eq('question_id', q.id)
+          .maybeSingle();
+
+        selectedAnswer = ans ? ans.answer : null;
+        handleReveal();
+      }
+    }
+
+    // ── RESET ──────────────────────────────────────────────
+    function resetPlayer() {
+      clearChannels();
+      gameId = null; playerId = null; playerName = ''; playerEliminated = false;
+      currentQuestion = null; selectedAnswer = null;
+      document.getElementById('code-input').value = '';
+      document.getElementById('name-input').value = '';
+      setError('');
+      showScreen('join');
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

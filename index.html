@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1% Club — Host</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:         #07090f;
+      --bg-card:    #111827;
+      --bg-surface: #1f2937;
+      --gold:       #f5c518;
+      --blue:       #60a5fa;
+      --green:      #22c55e;
+      --red:        #ef4444;
+      --text:       #f1f5f9;
+      --text-dim:   #94a3b8;
+      --border:     rgba(255,255,255,0.08);
+      --radius:     12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── SCREENS ── */
+    .screen { display: none; width: 100%; max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .screen.active { display: block; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo { font-size: 1.5rem; font-weight: 900; color: var(--gold); }
+    .game-code-small { font-family: monospace; font-size: 1.1rem; font-weight: 700; color: var(--text-dim); }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+    .card h2 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 1.25rem;
+    }
+
+    /* ── FORM ── */
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.35rem;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 0.6rem 0.9rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.15s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { outline: none; border-color: var(--gold); }
+    .form-group textarea { resize: vertical; min-height: 68px; }
+    .form-group select option { background: var(--bg-surface); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.4rem;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-primary { background: var(--gold); color: #000; }
+    .btn-primary:not(:disabled):hover { background: #ffd700; transform: translateY(-1px); }
+    .btn-secondary { background: var(--bg-surface); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:not(:disabled):hover { border-color: var(--gold); }
+    .btn-full { width: 100%; }
+    .btn-lg { padding: 0.9rem 1.8rem; font-size: 1.1rem; }
+    .btn-xl { padding: 1.25rem 3rem; font-size: 1.4rem; }
+
+    /* ── NEW GAME SCREEN ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 3rem;
+    }
+    .hero-pct {
+      font-size: 8rem;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1;
+      text-shadow: 0 0 60px rgba(245,197,24,0.3);
+    }
+    .hero-title { font-size: 2rem; font-weight: 700; margin-top: 0.5rem; }
+    .hero-sub { color: var(--text-dim); margin-top: 0.75rem; font-size: 1.1rem; }
+
+    /* ── SETUP SCREEN ── */
+    .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .setup-right { display: flex; flex-direction: column; gap: 1rem; }
+    .question-list-scroll { max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; }
+    .question-item {
+      background: var(--bg-surface);
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+    }
+    .q-num { font-weight: 700; color: var(--gold); min-width: 1.4rem; flex-shrink: 0; }
+    .q-text { flex: 1; }
+    .q-pct-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      background: var(--bg);
+      padding: 0.15rem 0.5rem;
+      border-radius: 99px;
+      flex-shrink: 0;
+    }
+    .q-del {
+      background: none;
+      border: none;
+      color: var(--red);
+      cursor: pointer;
+      font-size: 0.9rem;
+      opacity: 0.45;
+      transition: opacity 0.15s;
+      padding: 0.2rem;
+      flex-shrink: 0;
+    }
+    .q-del:hover { opacity: 1; }
+    .no-questions { color: var(--text-dim); font-size: 0.9rem; text-align: center; padding: 2rem 0; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+    /* ── LOBBY SCREEN ── */
+    .lobby-grid { display: grid; grid-template-columns: auto 1fr; gap: 2rem; }
+    .qr-panel { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    #qr-code {
+      background: #fff;
+      padding: 14px;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      display: inline-block;
+    }
+    #qr-code img, #qr-code canvas { display: block; }
+    .code-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+    .code-display {
+      font-size: 2.4rem;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      font-family: monospace;
+      margin: 0.25rem 0;
+    }
+    .player-url-box {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      word-break: break-all;
+      background: var(--bg-surface);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      margin-top: 0.75rem;
+      max-width: 240px;
+    }
+    .players-panel { display: flex; flex-direction: column; }
+    .player-count { font-size: 1rem; font-weight: 600; color: var(--text-dim); margin-bottom: 1rem; }
+    .player-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; flex: 1; align-content: flex-start; }
+    .player-chip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 0.35rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      animation: popIn 0.2s ease;
+    }
+    @keyframes popIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .pulse { animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+    .lobby-actions { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+    .lobby-hint { font-size: 0.8rem; color: var(--text-dim); text-align: center; margin-top: 0.5rem; }
+
+    /* ── QUESTION SCREEN ── */
+    .q-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; }
+    .q-meta { display: flex; align-items: center; gap: 1rem; }
+    .q-progress { font-size: 1rem; font-weight: 600; color: var(--text-dim); }
+    .q-pct-pill {
+      background: var(--gold);
+      color: #000;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 99px;
+    }
+    .answer-counter { font-size: 1.1rem; font-weight: 700; color: var(--blue); }
+    .q-text-large { font-size: 2rem; font-weight: 700; line-height: 1.35; margin-bottom: 2rem; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    .option-box {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .option-box.is-correct { border-color: var(--green); background: rgba(34,197,94,0.08); }
+    .option-box.is-wrong   { opacity: 0.3; }
+    .opt-label {
+      background: var(--bg-surface);
+      color: var(--gold);
+      font-weight: 900;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.95rem;
+    }
+    .option-box.is-correct .opt-label { background: var(--green); color: #000; }
+    .opt-text { font-size: 1.1rem; font-weight: 600; }
+    .opt-tick { margin-left: auto; font-size: 1.4rem; color: var(--green); }
+    .q-footer { display: flex; justify-content: flex-end; }
+
+    /* ── REVEAL SCREEN ── */
+    .reveal-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0; }
+    .stat-box { background: var(--bg-card); border-radius: var(--radius); padding: 1.25rem; text-align: center; }
+    .stat-num { font-size: 2.75rem; font-weight: 900; line-height: 1; }
+    .stat-label { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.35rem; }
+    .stat-num.green { color: var(--green); }
+    .stat-num.red   { color: var(--red); }
+    .stat-num.blue  { color: var(--blue); }
+    .elim-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .elim-name {
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.4);
+      color: var(--red);
+      border-radius: 99px;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .nobody-out { color: var(--green); font-weight: 600; font-size: 0.95rem; }
+
+    /* ── FINISHED SCREEN ── */
+    .finished-wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 3rem;
+    }
+    .finish-icon { font-size: 5rem; margin-bottom: 1rem; }
+    .finish-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; }
+    .finish-sub { color: var(--text-dim); font-size: 1.1rem; }
+    .survivor-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 2rem; }
+    .survivor-card {
+      background: linear-gradient(135deg, var(--gold), #c8a010);
+      color: #000;
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 0.85rem 2rem;
+      border-radius: var(--radius);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════ NEW GAME ══════════════ -->
+  <div id="screen-new" class="screen active">
+    <div class="hero">
+      <div class="hero-pct">1%</div>
+      <div class="hero-title">Club — Host Dashboard</div>
+      <div class="hero-sub">Create a game, add questions, share the QR code.</div>
+      <div style="margin-top:2.5rem;">
+        <button class="btn btn-primary btn-xl" onclick="createGame()">Create New Game</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SETUP ══════════════ -->
+  <div id="screen-setup" class="screen">
+    <div class="page-header">
+      <span class="logo">1% Club</span>
+      <span class="game-code-small" id="setup-code-label"></span>
+    </div>
+    <div class="setup-grid">
+
+      <!-- Left: question form -->
+      <div>
+        <div class="card">
+          <h2>Add a Question</h2>
+          <form id="question-form" onsubmit="handleAddQuestion(event)">
+            <div class="form-group">
+              <label>Question</label>
+              <textarea id="q-input-text" placeholder="Type the question here…" required></textarea>
+            </div>
+            <div class="form-group">
+              <label>Answer Options</label>
+              <div class="two-col">
+                <input id="q-opt-a" placeholder="A" required>
+                <input id="q-opt-b" placeholder="B" required>
+                <input id="q-opt-c" placeholder="C" required>
+                <input id="q-opt-d" placeholder="D" required>
+              </div>
+            </div>
+            <div class="two-col">
+              <div class="form-group">
+                <label>Correct Answer</label>
+                <select id="q-correct">
+                  <option value="0">A</option>
+                  <option value="1">B</option>
+                  <option value="2">C</option>
+                  <option value="3">D</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Difficulty</label>
+                <select id="q-pct-select">
+                  <option value="90%">90% — Very easy</option>
+                  <option value="75%">75% — Easy</option>
+                  <option value="50%" selected>50% — Medium</option>
+                  <option value="30%">30% — Hard</option>
+                  <option value="10%">10% — Very hard</option>
+                  <option value="5%">5% — Expert</option>
+                  <option value="1%">1% — The 1%!</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">+ Add Question</button>
+          </form>
+          <hr class="divider">
+          <button class="btn btn-secondary btn-full" id="btn-load-samples" onclick="loadSampleQuestions()">
+            Load 7 Sample Questions
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: question list + open lobby -->
+      <div class="setup-right">
+        <div class="card" style="flex:1;">
+          <h2>Questions Added (<span id="q-count">0</span>)</h2>
+          <div class="question-list-scroll" id="question-list">
+            <p class="no-questions">No questions yet — add some or load samples.</p>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-lg btn-full" id="btn-open-lobby" onclick="openLobby()" disabled>
+          Open Lobby
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ LOBBY ══════════════ -->
+  <div id="screen-lobby" class="screen">
+    <div class="page-header">
+      <span class="logo">1% Club</span>
+      <span class="game-code-small" id="lobby-code-label"></span>
+    </div>
+    <div class="lobby-grid">
+
+      <!-- QR panel -->
+      <div class="card qr-panel">
+        <div id="qr-code"></div>
+        <div class="code-label">Game Code</div>
+        <div class="code-display" id="code-display"></div>
+        <div class="code-label" style="margin-top:0.5rem;">Players scan to join or visit:</div>
+        <div class="player-url-box" id="player-url-text"></div>
+      </div>
+
+      <!-- Players panel -->
+      <div class="card players-panel">
+        <h2>Players in Lobby</h2>
+        <div class="player-count" id="player-count">Waiting for players to join…</div>
+        <div class="player-chips" id="player-chips">
+          <span class="pulse" style="color:var(--text-dim);font-size:0.9rem;">Scanning QR code…</span>
+        </div>
+        <div class="lobby-actions">
+          <button class="btn btn-primary btn-full btn-lg" id="btn-start-game" onclick="startGame()" disabled>
+            Start Game
+          </button>
+          <p class="lobby-hint" id="lobby-hint">Waiting for at least one player to join</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ QUESTION ACTIVE ══════════════ -->
+  <div id="screen-question" class="screen">
+    <div class="page-header">
+      <span class="logo">1% Club</span>
+      <span class="game-code-small" id="q-screen-code"></span>
+    </div>
+    <div class="q-header">
+      <div class="q-meta">
+        <span class="q-progress" id="q-progress"></span>
+        <span class="q-pct-pill" id="q-pct-label"></span>
+      </div>
+      <span class="answer-counter" id="answer-count"></span>
+    </div>
+    <div class="q-text-large" id="q-text"></div>
+    <div class="options-grid" id="q-options"></div>
+    <div class="q-footer">
+      <button class="btn btn-primary btn-lg" onclick="revealAnswer()">Reveal Answer →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ REVEAL ══════════════ -->
+  <div id="screen-reveal" class="screen">
+    <div class="page-header">
+      <span class="logo">1% Club</span>
+    </div>
+    <div class="q-text-large" id="reveal-q-text" style="font-size:1.4rem;color:var(--text-dim);margin-bottom:1.25rem;"></div>
+    <div class="options-grid" id="reveal-options"></div>
+    <div class="reveal-stats">
+      <div class="stat-box">
+        <div class="stat-num green" id="stat-correct">0</div>
+        <div class="stat-label">Got it right</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num red" id="stat-eliminated">0</div>
+        <div class="stat-label">Eliminated this round</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num blue" id="stat-remaining">0</div>
+        <div class="stat-label">Still in the game</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:1.5rem;">
+      <h2>Eliminated This Round</h2>
+      <div class="elim-list" id="reveal-elim-list"></div>
+    </div>
+    <div style="text-align:right;">
+      <button class="btn btn-primary btn-lg" id="btn-next">Next Question →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ FINISHED ══════════════ -->
+  <div id="screen-finished" class="screen">
+    <div class="finished-wrap">
+      <div class="finish-icon" id="finish-icon">🏆</div>
+      <div class="finish-title" id="finish-title">Game Over!</div>
+      <div class="finish-sub" id="finish-sub"></div>
+      <div class="survivor-list" id="survivor-list"></div>
+      <div style="margin-top:3rem;">
+        <button class="btn btn-primary btn-lg" onclick="resetGame()">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="config.js"></script>
+  <script>
+    // ── DB CLIENT ──────────────────────────────────────────
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ── STATE ──────────────────────────────────────────────
+    let game              = null;
+    let questions         = [];
+    let players           = [];
+    let currentQIdx       = -1;
+    let currentQuestion   = null;
+    let answerCount       = 0;
+    let channels          = [];
+
+    const LABELS = ['A', 'B', 'C', 'D'];
+
+    // ── SAMPLE QUESTIONS ───────────────────────────────────
+    const SAMPLES = [
+      { text: 'What colour do you get when you mix blue and yellow?',    options: ['Purple','Orange','Green','Brown'],           correct_answer: 'Green',    percentage: '90%' },
+      { text: 'How many days are there in a leap year?',                 options: ['364','365','366','367'],                     correct_answer: '366',      percentage: '75%' },
+      { text: 'What is 15% of 80?',                                      options: ['10','12','14','16'],                         correct_answer: '12',        percentage: '50%' },
+      { text: 'What is the capital city of Australia?',                  options: ['Sydney','Melbourne','Brisbane','Canberra'],  correct_answer: 'Canberra', percentage: '30%' },
+      { text: 'How many hearts does an octopus have?',                   options: ['1','2','3','4'],                             correct_answer: '3',         percentage: '10%' },
+      { text: 'In which year did the Berlin Wall fall?',                 options: ['1987','1988','1989','1990'],                 correct_answer: '1989',     percentage: '5%'  },
+      { text: 'What is the only metal that is liquid at room temperature?', options: ['Lead','Tin','Mercury','Gallium'],         correct_answer: 'Mercury',  percentage: '1%'  },
+    ];
+
+    // ── HELPERS ────────────────────────────────────────────
+    function showScreen(name) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + name).classList.add('active');
+    }
+
+    function generateCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    }
+
+    function clearChannels() {
+      channels.forEach(ch => ch.unsubscribe());
+      channels = [];
+    }
+
+    function activePlayers() {
+      return players.filter(p => !p.eliminated);
+    }
+
+    // ── INIT ───────────────────────────────────────────────
+    async function init() {
+      const savedId = localStorage.getItem('host_game_id');
+      if (savedId) {
+        try {
+          const { data } = await db.from('games').select().eq('id', savedId).single();
+          if (data && data.status !== 'finished') {
+            await resumeGame(data);
+            return;
+          }
+        } catch (e) { /* fall through */ }
+        localStorage.removeItem('host_game_id');
+      }
+      showScreen('new');
+    }
+
+    // ── CREATE GAME ────────────────────────────────────────
+    async function createGame() {
+      const code = generateCode();
+      const { data, error } = await db.from('games').insert({
+        game_code: code, status: 'lobby', current_question_index: -1
+      }).select().single();
+
+      if (error) { alert('Could not create game: ' + error.message); return; }
+
+      game = data;
+      questions = [];
+      players = [];
+      localStorage.setItem('host_game_id', game.id);
+
+      document.getElementById('setup-code-label').textContent = 'Code: ' + game.game_code;
+      renderQuestionList();
+      updateOpenLobbyBtn();
+      showScreen('setup');
+    }
+
+    // ── QUESTIONS ──────────────────────────────────────────
+    async function handleAddQuestion(e) {
+      e.preventDefault();
+      const text = document.getElementById('q-input-text').value.trim();
+      const opts = [
+        document.getElementById('q-opt-a').value.trim(),
+        document.getElementById('q-opt-b').value.trim(),
+        document.getElementById('q-opt-c').value.trim(),
+        document.getElementById('q-opt-d').value.trim(),
+      ];
+      const correctIdx     = parseInt(document.getElementById('q-correct').value, 10);
+      const correctAnswer  = opts[correctIdx];
+      const percentage     = document.getElementById('q-pct-select').value;
+
+      await insertQuestion(text, opts, correctAnswer, percentage);
+      e.target.reset();
+    }
+
+    async function insertQuestion(text, options, correctAnswer, percentage) {
+      const { data, error } = await db.from('questions').insert({
+        game_id: game.id,
+        question_index: questions.length,
+        text, options, correct_answer: correctAnswer, percentage
+      }).select().single();
+
+      if (error) { alert('Could not add question: ' + error.message); return; }
+      questions.push(data);
+      renderQuestionList();
+      updateOpenLobbyBtn();
+    }
+
+    async function loadSampleQuestions() {
+      const btn = document.getElementById('btn-load-samples');
+      btn.disabled = true;
+      btn.textContent = 'Loading…';
+      for (const q of SAMPLES) {
+        await insertQuestion(q.text, q.options, q.correct_answer, q.percentage);
+      }
+      btn.textContent = '✓ Samples loaded';
+    }
+
+    async function deleteQuestion(idx) {
+      const q = questions[idx];
+      await db.from('questions').delete().eq('id', q.id);
+      questions.splice(idx, 1);
+      for (let i = idx; i < questions.length; i++) {
+        await db.from('questions').update({ question_index: i }).eq('id', questions[i].id);
+        questions[i].question_index = i;
+      }
+      renderQuestionList();
+      updateOpenLobbyBtn();
+    }
+
+    function renderQuestionList() {
+      const list = document.getElementById('question-list');
+      document.getElementById('q-count').textContent = questions.length;
+      if (!questions.length) {
+        list.innerHTML = '<p class="no-questions">No questions yet — add some or load samples.</p>';
+        return;
+      }
+      list.innerHTML = questions.map((q, i) => `
+        <div class="question-item">
+          <span class="q-num">${i + 1}.</span>
+          <span class="q-text">${q.text}</span>
+          <span class="q-pct-tag">${q.percentage}</span>
+          <button class="q-del" onclick="deleteQuestion(${i})" title="Remove">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function updateOpenLobbyBtn() {
+      const btn = document.getElementById('btn-open-lobby');
+      btn.disabled = questions.length === 0;
+      btn.textContent = questions.length === 0
+        ? 'Add at least 1 question to continue'
+        : `Open Lobby  (${questions.length} question${questions.length !== 1 ? 's' : ''})`;
+    }
+
+    // ── LOBBY ──────────────────────────────────────────────
+    async function openLobby() {
+      const playerUrl = new URL('play.html', window.location.href).href + '?code=' + game.game_code;
+
+      document.getElementById('lobby-code-label').textContent = 'Code: ' + game.game_code;
+      document.getElementById('code-display').textContent     = game.game_code;
+      document.getElementById('player-url-text').textContent  = playerUrl;
+      document.getElementById('q-screen-code').textContent    = 'Code: ' + game.game_code;
+
+      document.getElementById('qr-code').innerHTML = '';
+      new QRCode(document.getElementById('qr-code'), {
+        text: playerUrl, width: 200, height: 200,
+        colorDark: '#000000', colorLight: '#ffffff'
+      });
+
+      const { data } = await db.from('players').select().eq('game_id', game.id).order('joined_at');
+      players = data || [];
+      renderPlayerList();
+      subscribeToPlayers();
+      showScreen('lobby');
+    }
+
+    function renderPlayerList() {
+      const chips    = document.getElementById('player-chips');
+      const count    = document.getElementById('player-count');
+      const startBtn = document.getElementById('btn-start-game');
+      const hint     = document.getElementById('lobby-hint');
+
+      count.textContent = players.length === 0
+        ? 'Waiting for players to join…'
+        : `${players.length} player${players.length !== 1 ? 's' : ''} in the lobby`;
+
+      chips.innerHTML = players.length === 0
+        ? '<span class="pulse" style="color:var(--text-dim);font-size:0.9rem;">Scanning QR code…</span>'
+        : players.map(p => `<div class="player-chip">${p.name}</div>`).join('');
+
+      startBtn.disabled  = players.length === 0;
+      hint.textContent   = players.length === 0
+        ? 'Waiting for at least one player to join'
+        : `${players.length} player${players.length !== 1 ? 's' : ''} ready — click Start Game!`;
+    }
+
+    function subscribeToPlayers() {
+      const ch = db.channel('host-players-' + game.id)
+        .on('postgres_changes', {
+          event: 'INSERT', schema: 'public', table: 'players',
+          filter: 'game_id=eq.' + game.id
+        }, payload => {
+          players.push(payload.new);
+          renderPlayerList();
+        })
+        .subscribe();
+      channels.push(ch);
+    }
+
+    // ── GAME FLOW ──────────────────────────────────────────
+    async function startGame() {
+      const { error } = await db.from('games').update({
+        status: 'question', current_question_index: 0
+      }).eq('id', game.id);
+      if (error) { alert('Failed to start: ' + error.message); return; }
+
+      currentQIdx     = 0;
+      currentQuestion = questions[0];
+      answerCount     = 0;
+      showScreen('question');
+      renderQuestion();
+      subscribeToAnswers();
+    }
+
+    function renderQuestion() {
+      const q = currentQuestion;
+      document.getElementById('q-progress').textContent  = `Question ${currentQIdx + 1} of ${questions.length}`;
+      document.getElementById('q-pct-label').textContent = q.percentage + ' of people get this right';
+      document.getElementById('q-text').textContent      = q.text;
+      document.getElementById('answer-count').textContent = '0 / ' + activePlayers().length + ' answered';
+      answerCount = 0;
+
+      document.getElementById('q-options').innerHTML = q.options.map((opt, i) => `
+        <div class="option-box">
+          <span class="opt-label">${LABELS[i]}</span>
+          <span class="opt-text">${opt}</span>
+        </div>
+      `).join('');
+    }
+
+    function subscribeToAnswers() {
+      const ch = db.channel('host-answers-' + game.id)
+        .on('postgres_changes', {
+          event: 'INSERT', schema: 'public', table: 'answers',
+          filter: 'game_id=eq.' + game.id
+        }, payload => {
+          if (currentQuestion && payload.new.question_id === currentQuestion.id) {
+            answerCount++;
+            document.getElementById('answer-count').textContent =
+              `${answerCount} / ${activePlayers().length} answered`;
+          }
+        })
+        .subscribe();
+      channels.push(ch);
+    }
+
+    async function revealAnswer() {
+      const q = currentQuestion;
+
+      const { data: answers } = await db.from('answers')
+        .select('player_id, answer')
+        .eq('question_id', q.id);
+
+      const correctIds = new Set(
+        (answers || []).filter(a => a.answer === q.correct_answer).map(a => a.player_id)
+      );
+
+      const active      = activePlayers();
+      const toEliminate = active.filter(p => !correctIds.has(p.id)).map(p => p.id);
+
+      if (toEliminate.length > 0) {
+        await db.from('players').update({ eliminated: true }).in('id', toEliminate);
+        players = players.map(p => toEliminate.includes(p.id) ? { ...p, eliminated: true } : p);
+      }
+
+      await db.from('games').update({ status: 'reveal' }).eq('id', game.id);
+
+      const eliminatedThisRound = active.filter(p => toEliminate.includes(p.id));
+      renderReveal(q, correctIds.size, eliminatedThisRound);
+      showScreen('reveal');
+    }
+
+    function renderReveal(q, correctCount, eliminatedThisRound) {
+      document.getElementById('reveal-q-text').textContent = q.text;
+
+      document.getElementById('reveal-options').innerHTML = q.options.map((opt, i) => {
+        const isCorrect = opt === q.correct_answer;
+        return `
+          <div class="option-box ${isCorrect ? 'is-correct' : 'is-wrong'}">
+            <span class="opt-label">${LABELS[i]}</span>
+            <span class="opt-text">${opt}</span>
+            ${isCorrect ? '<span class="opt-tick">✓</span>' : ''}
+          </div>
+        `;
+      }).join('');
+
+      const remaining = activePlayers().length;
+      document.getElementById('stat-correct').textContent    = correctCount;
+      document.getElementById('stat-eliminated').textContent = eliminatedThisRound.length;
+      document.getElementById('stat-remaining').textContent  = remaining;
+
+      const elimList = document.getElementById('reveal-elim-list');
+      elimList.innerHTML = eliminatedThisRound.length > 0
+        ? eliminatedThisRound.map(p => `<span class="elim-name">${p.name}</span>`).join('')
+        : '<span class="nobody-out">Nobody eliminated this round!</span>';
+
+      const isLastQ    = currentQIdx >= questions.length - 1;
+      const noSurvivors = remaining === 0;
+      const nextBtn    = document.getElementById('btn-next');
+
+      if (isLastQ || noSurvivors) {
+        nextBtn.textContent = 'End Game';
+        nextBtn.onclick     = endGame;
+      } else {
+        nextBtn.textContent = 'Next Question →';
+        nextBtn.onclick     = nextQuestion;
+      }
+    }
+
+    async function nextQuestion() {
+      currentQIdx++;
+      currentQuestion = questions[currentQIdx];
+      answerCount     = 0;
+      await db.from('games').update({
+        status: 'question', current_question_index: currentQIdx
+      }).eq('id', game.id);
+      showScreen('question');
+      renderQuestion();
+    }
+
+    async function endGame() {
+      await db.from('games').update({ status: 'finished' }).eq('id', game.id);
+      localStorage.removeItem('host_game_id');
+      clearChannels();
+
+      const survivors = activePlayers();
+      const icon      = document.getElementById('finish-icon');
+      const title     = document.getElementById('finish-title');
+      const sub       = document.getElementById('finish-sub');
+      const list      = document.getElementById('survivor-list');
+
+      if (survivors.length === 0) {
+        icon.textContent  = '💀';
+        title.textContent = 'Nobody Survived!';
+        sub.textContent   = 'Everyone was eliminated — the 1% remains elusive.';
+        list.innerHTML    = '';
+      } else if (survivors.length === 1) {
+        icon.textContent  = '🏆';
+        title.textContent = 'We Have a Winner!';
+        sub.textContent   = 'One player made it through every question!';
+        list.innerHTML    = `<div class="survivor-card">👑 ${survivors[0].name}</div>`;
+      } else {
+        icon.textContent  = '🏆';
+        title.textContent = `${survivors.length} Players Survived!`;
+        sub.textContent   = 'These players belong in the 1% Club.';
+        list.innerHTML    = survivors.map(p => `<div class="survivor-card">${p.name}</div>`).join('');
+      }
+
+      showScreen('finished');
+    }
+
+    function resetGame() {
+      game = null; questions = []; players = [];
+      currentQIdx = -1; currentQuestion = null; answerCount = 0;
+      clearChannels();
+      showScreen('new');
+    }
+
+    // ── RESUME ─────────────────────────────────────────────
+    async function resumeGame(savedGame) {
+      game = savedGame;
+
+      const [{ data: qs }, { data: ps }] = await Promise.all([
+        db.from('questions').select().eq('game_id', game.id).order('question_index'),
+        db.from('players').select().eq('game_id', game.id).order('joined_at'),
+      ]);
+      questions = qs || [];
+      players   = ps || [];
+
+      document.getElementById('setup-code-label').textContent = 'Code: ' + game.game_code;
+      document.getElementById('q-screen-code').textContent    = 'Code: ' + game.game_code;
+
+      if (game.status === 'lobby') {
+        await openLobby(); // openLobby calls subscribeToPlayers() internally
+      } else if (game.status === 'question') {
+        currentQIdx     = game.current_question_index;
+        currentQuestion = questions[currentQIdx];
+        answerCount     = 0;
+        subscribeToPlayers();
+        subscribeToAnswers();
+        showScreen('question');
+        renderQuestion();
+      } else if (game.status === 'reveal') {
+        currentQIdx     = game.current_question_index;
+        currentQuestion = questions[currentQIdx];
+        subscribeToPlayers();
+        subscribeToAnswers();
+        await revealAnswer();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
