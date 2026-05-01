@@ -223,4 +223,133 @@ const QUESTION_PACKS = [
     ],
   },
 
+  // ── MERCEDES-BENZ HISTORY ──────────────────────────────────────────────────
+  {
+    id:          'mercedes-benz-history',
+    name:        'Mercedes-Benz History',
+    description: 'From Karl Benz to Silver Arrows — 20 questions, easy to expert',
+    questions: [
+      {
+        text:           'What is the iconic symbol of Mercedes-Benz?',
+        options:        ['A winged wheel', 'A three-pointed star', 'A laurel wreath', 'A silver arrow'],
+        correct_answer: 'A three-pointed star',
+        percentage:     '90%',
+      },
+      {
+        text:           'In which country was Mercedes-Benz founded?',
+        options:        ['France', 'Italy', 'United Kingdom', 'Germany'],
+        correct_answer: 'Germany',
+        percentage:     '90%',
+      },
+      {
+        text:           'What year was the Mercedes-Benz brand officially created through the merger of Daimler and Benz?',
+        options:        ['1920', '1926', '1931', '1935'],
+        correct_answer: '1926',
+        percentage:     '75%',
+      },
+      {
+        text:           'Who is widely credited as the inventor of the first true petrol-powered automobile?',
+        options:        ['Gottlieb Daimler', 'Wilhelm Maybach', 'Karl Benz', 'Rudolf Diesel'],
+        correct_answer: 'Karl Benz',
+        percentage:     '75%',
+      },
+      {
+        text:           "What does the 'Mercedes' name originate from?",
+        options:        ['A Greek goddess', 'The daughter of Emil Jellinek', 'A Spanish city', 'A Latin word for speed'],
+        correct_answer: 'The daughter of Emil Jellinek',
+        percentage:     '75%',
+      },
+      {
+        text:           "What was the name of Karl Benz's first commercial automobile, patented in 1886?",
+        options:        ['Benz Victoria', 'Benz Velo', 'Benz Patent-Motorwagen', 'Benz Landaulet'],
+        correct_answer: 'Benz Patent-Motorwagen',
+        percentage:     '75%',
+      },
+      {
+        text:           "Which famous race did Mercedes-Benz dominate in the 1930s with their 'Silver Arrows' racing cars?",
+        options:        ['Le Mans 24 Hours', 'Monaco Grand Prix', 'German Grand Prix', 'Mille Miglia'],
+        correct_answer: 'German Grand Prix',
+        percentage:     '50%',
+      },
+      {
+        text:           "Why did the Mercedes-Benz racing cars become known as 'Silver Arrows'?",
+        options:        ['They were painted silver by factory order', 'Their white paint was stripped to reduce weight, revealing bare aluminium', 'They were sponsored by a silver mine', 'Their speed made them appear as silver streaks'],
+        correct_answer: 'Their white paint was stripped to reduce weight, revealing bare aluminium',
+        percentage:     '50%',
+      },
+      {
+        text:           "What was the model name of the iconic Mercedes-Benz 'Gullwing' sports car launched in 1954?",
+        options:        ['300 SL', '190 SL', '450 SL', '600 SL'],
+        correct_answer: '300 SL',
+        percentage:     '50%',
+      },
+      {
+        text:           'Which Mercedes-Benz model was the first car in history to feature anti-lock brakes (ABS) as standard?',
+        options:        ['W116 S-Class', 'W123 E-Class', 'W126 S-Class', 'W114 /8'],
+        correct_answer: 'W116 S-Class',
+        percentage:     '30%',
+      },
+      {
+        text:           "Bertha Benz made automotive history in 1888 by completing the world's first long-distance road trip. What was the approximate distance?",
+        options:        ['20 km', '60 km', '104 km', '250 km'],
+        correct_answer: '104 km',
+        percentage:     '30%',
+      },
+      {
+        text:           "What does 'AMG' stand for in Mercedes-AMG?",
+        options:        ['Auto Motor Group', 'Aufrecht Melcher Grossaspach', 'Advanced Motor Gesellschaft', 'Automotive Motor Garage'],
+        correct_answer: 'Aufrecht Melcher Grossaspach',
+        percentage:     '30%',
+      },
+      {
+        text:           'In what year did Mercedes-Benz introduce the revolutionary crumple zone, designed by Béla Barényi?',
+        options:        ['1951', '1959', '1966', '1973'],
+        correct_answer: '1959',
+        percentage:     '30%',
+      },
+      {
+        text:           "Which Mercedes-Benz model, produced from 1963 to 1971, is nicknamed the 'Pagoda' due to its unusual roof shape?",
+        options:        ['230 SL', '350 SL', '280 SE', '600 Grosser'],
+        correct_answer: '230 SL',
+        percentage:     '10%',
+      },
+      {
+        text:           'What was the original engine displacement of the Mercedes-Benz 300 SLR that competed at Le Mans in 1955?',
+        options:        ['2.5 litres', '2.9 litres', '3.0 litres', '3.5 litres'],
+        correct_answer: '3.0 litres',
+        percentage:     '10%',
+      },
+      {
+        text:           'The tragic 1955 Le Mans disaster involved a Mercedes-Benz 300 SLR. Who was the driver whose car was involved in the accident?',
+        options:        ['Juan Manuel Fangio', 'Stirling Moss', 'Pierre Levegh', 'Karl Kling'],
+        correct_answer: 'Pierre Levegh',
+        percentage:     '10%',
+      },
+      {
+        text:           "Which internal designation did Mercedes-Benz use for the legendary 600 'Grosser Mercedes' limousine produced from 1963?",
+        options:        ['W100', 'W108', 'W112', 'W126'],
+        correct_answer: 'W100',
+        percentage:     '5%',
+      },
+      {
+        text:           'Before the AMG brand was formally acquired by Daimler-Benz, in which year did the two companies form an exclusive cooperation agreement?',
+        options:        ['1984', '1990', '1993', '1999'],
+        correct_answer: '1990',
+        percentage:     '5%',
+      },
+      {
+        text:           "What innovative valve actuation system did AMG's famous 6.3-litre naturally aspirated V8 (M156) use?",
+        options:        ['Pneumatic valve springs', 'Desmodromic valves', 'Roller finger followers only', 'Cosworth-type bucket tappets'],
+        correct_answer: 'Pneumatic valve springs',
+        percentage:     '1%',
+      },
+      {
+        text:           'Karl Benz and Gottlieb Daimler are known never to have met. What fundamental technical detail differed between their earliest engines?',
+        options:        ['Benz used a two-stroke engine; Daimler a four-stroke', 'Benz used a horizontal single-cylinder; Daimler used a vertical single-cylinder', 'Benz used liquid cooling; Daimler used air cooling', 'Benz used chain drive; Daimler used shaft drive'],
+        correct_answer: 'Benz used a horizontal single-cylinder; Daimler used a vertical single-cylinder',
+        percentage:     '1%',
+      },
+    ],
+  },
+
 ];
