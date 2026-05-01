@@ -8,9 +8,10 @@ A real-time multiplayer quiz game inspired by the TV show. Questions are ranked 
 
 ## How it works
 
-- The **host** opens `index.html`, creates a game, adds questions, and shares a QR code
+- The **host** opens `index.html`, creates a game, loads a question pack (or adds custom questions), and shares a QR code
 - **Players** scan the QR code on their phones and join with their name
-- The host runs the game question by question — wrong answers eliminate players
+- The host runs the game question by question — a wrong answer eliminates a player
+- Eliminated players keep playing — a correct answer on any future question reinstates them
 - Last person (or people) standing wins
 
 ## Setup
@@ -45,8 +46,10 @@ The live version at the URL above is hosted on GitHub Pages — no server needed
 |------|---------|
 | `index.html` | Host dashboard |
 | `play.html` | Player mobile view |
+| `question-packs.js` | Pre-built question packs (add new packs here) |
 | `config.js` | Supabase credentials |
 | `setup.sql` | Database schema (run once) |
+| `HOST_GUIDE.md` | Step-by-step guide for running a session |
 
 ## Tech
 

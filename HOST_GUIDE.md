@@ -48,6 +48,7 @@ The following packs are included:
 | Science & Nature | Planets, elements, biology |
 | History & Geography | Dates, capitals, world events |
 | Sport & Entertainment | Football, music, film, Olympics |
+| Mercedes-Benz History | Brand history, racing heritage, engineering — 20 questions |
 
 Questions should ideally run from easy to hard — this builds tension as the game progresses.
 
@@ -56,6 +57,8 @@ Questions should ideally run from easy to hard — this builds tension as the ga
 ## Step 3 — Open the Lobby
 
 Once you have at least one question added, click **Open Lobby**.
+
+If you need to change questions after opening the lobby, click **← Back to Setup** at the bottom of the lobby screen. Your existing questions stay loaded and you can swap packs or make edits before reopening the lobby.
 
 The lobby screen shows:
 - A **QR code** players can scan to join
