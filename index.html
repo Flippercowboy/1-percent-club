@@ -340,6 +340,15 @@
       font-size: 0.85rem;
       font-weight: 600;
     }
+    .reinstated-name {
+      background: rgba(0,141,252,0.12);
+      border: 1px solid rgba(0,141,252,0.4);
+      color: var(--accent);
+      border-radius: 99px;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
     .nobody-out { color: var(--green); font-weight: 600; font-size: 0.95rem; }
 
     /* ── PLAYER ICONS ── */
@@ -568,9 +577,13 @@
         <div class="stat-label">Still in the game</div>
       </div>
     </div>
-    <div class="card" style="margin-bottom:1.5rem;">
+    <div class="card" style="margin-bottom:1rem;">
       <h2>Eliminated This Round</h2>
       <div class="elim-list" id="reveal-elim-list"></div>
+    </div>
+    <div class="card" style="margin-bottom:1.5rem;" id="reinstated-card">
+      <h2>Back In The Game ↩</h2>
+      <div class="elim-list" id="reveal-reinstated-list"></div>
     </div>
     <div class="player-icons-wrap">
       <div class="player-icons-label">Players</div>
@@ -833,7 +846,7 @@
       document.getElementById('q-progress').textContent  = `Question ${currentQIdx + 1} of ${questions.length}`;
       document.getElementById('q-pct-label').textContent = q.percentage + ' of people get this right';
       document.getElementById('q-text').textContent      = q.text;
-      document.getElementById('answer-count').textContent = '0 / ' + activePlayers().length + ' answered';
+      document.getElementById('answer-count').textContent = '0 / ' + players.length + ' answered';
       answerCount = 0;
 
       document.getElementById('q-options').innerHTML = q.options.map((opt, i) => `
@@ -853,7 +866,7 @@
           if (currentQuestion && payload.new.question_id === currentQuestion.id) {
             answerCount++;
             document.getElementById('answer-count').textContent =
-              `${answerCount} / ${activePlayers().length} answered`;
+              `${answerCount} / ${players.length} answered`;
           }
         })
         .subscribe();
@@ -871,18 +884,27 @@
         (answers || []).filter(a => a.answer === q.correct_answer).map(a => a.player_id)
       );
 
+      // Active players who got it wrong → eliminate
       const active      = activePlayers();
       const toEliminate = active.filter(p => !correctIds.has(p.id)).map(p => p.id);
-
       if (toEliminate.length > 0) {
         await db.from('players').update({ eliminated: true }).in('id', toEliminate);
         players = players.map(p => toEliminate.includes(p.id) ? { ...p, eliminated: true } : p);
       }
 
+      // Eliminated players who got it right → reinstate
+      const alreadyEliminated = players.filter(p => p.eliminated && !toEliminate.includes(p.id));
+      const toReinstate = alreadyEliminated.filter(p => correctIds.has(p.id)).map(p => p.id);
+      if (toReinstate.length > 0) {
+        await db.from('players').update({ eliminated: false }).in('id', toReinstate);
+        players = players.map(p => toReinstate.includes(p.id) ? { ...p, eliminated: false } : p);
+      }
+
       await db.from('games').update({ status: 'reveal' }).eq('id', game.id);
 
       const eliminatedThisRound = active.filter(p => toEliminate.includes(p.id));
-      renderReveal(q, correctIds.size, eliminatedThisRound);
+      const reinstatedThisRound = alreadyEliminated.filter(p => toReinstate.includes(p.id));
+      renderReveal(q, correctIds.size, eliminatedThisRound, reinstatedThisRound);
       showScreen('reveal');
     }
 
@@ -899,7 +921,7 @@
       `).join('');
     }
 
-    function renderReveal(q, correctCount, eliminatedThisRound) {
+    function renderReveal(q, correctCount, eliminatedThisRound, reinstatedThisRound = []) {
       document.getElementById('reveal-q-text').textContent = q.text;
 
       document.getElementById('reveal-options').innerHTML = q.options.map((opt, i) => {
@@ -923,9 +945,18 @@
         ? eliminatedThisRound.map(p => `<span class="elim-name">${p.name}</span>`).join('')
         : '<span class="nobody-out">Nobody eliminated this round!</span>';
 
-      const isLastQ    = currentQIdx >= questions.length - 1;
+      const reinstatedCard = document.getElementById('reinstated-card');
+      if (reinstatedThisRound.length > 0) {
+        document.getElementById('reveal-reinstated-list').innerHTML =
+          reinstatedThisRound.map(p => `<span class="reinstated-name">↩ ${p.name}</span>`).join('');
+        reinstatedCard.style.display = '';
+      } else {
+        reinstatedCard.style.display = 'none';
+      }
+
+      const isLastQ     = currentQIdx >= questions.length - 1;
       const noSurvivors = remaining === 0;
-      const nextBtn    = document.getElementById('btn-next');
+      const nextBtn     = document.getElementById('btn-next');
 
       if (isLastQ || noSurvivors) {
         nextBtn.textContent = 'End Game';

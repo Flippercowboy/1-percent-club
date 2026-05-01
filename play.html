@@ -238,6 +238,23 @@
     .name-footer { margin-top: auto; padding-top: 1rem; font-size: 0.85rem; color: var(--text-dim); text-align: center; }
 
     /* ── NAME + RANDOMISE ── */
+    /* ── SECOND CHANCE BANNER ── */
+    .second-chance-banner {
+      display: none;
+      background: rgba(0,141,252,0.1);
+      border: 1px solid rgba(0,141,252,0.35);
+      border-radius: 8px;
+      padding: 0.55rem 0.9rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .second-chance-banner.visible { display: block; }
+
     .name-input-row {
       display: flex;
       gap: 0.5rem;
@@ -301,6 +318,7 @@
 
   <!-- ══════════════ QUESTION ══════════════ -->
   <div id="screen-question" class="screen">
+    <div class="second-chance-banner" id="second-chance-banner">↩ Second Chance — get it right to rejoin!</div>
     <div class="q-header">
       <div class="q-meta">
         <span class="q-num-label" id="pq-progress"></span>
@@ -346,12 +364,24 @@
     </div>
   </div>
 
+  <!-- ══════════════ REVEAL: REINSTATED ══════════════ -->
+  <div id="screen-reveal-reinstated" class="screen">
+    <div class="center-fill">
+      <div class="result-card correct">
+        <div class="big-icon">↩</div>
+        <div class="status-h" style="color:var(--accent);margin-top:0.75rem;">You're Back!</div>
+        <div class="status-sub" style="margin-top:0.5rem;">You answered correctly — you're back in the game!</div>
+      </div>
+      <div class="status-sub pulse" style="margin-top:1rem;">Waiting for the next question…</div>
+    </div>
+  </div>
+
   <!-- ══════════════ SPECTATOR ══════════════ -->
   <div id="screen-spectator" class="screen">
     <div class="center-fill">
-      <div class="big-icon">👀</div>
-      <div class="status-h" style="color:var(--text-dim);">Spectating</div>
-      <div class="status-sub">You've been eliminated but you can watch along</div>
+      <div class="big-icon">💪</div>
+      <div class="status-h" style="color:var(--text-dim);">Still Out</div>
+      <div class="status-sub">Get the next one right to come back!</div>
     </div>
   </div>
 
@@ -527,12 +557,8 @@
 
         currentQuestion = q;
 
-        if (playerEliminated) {
-          showScreen('spectator');
-        } else {
-          renderQuestion(q);
-          showScreen('question');
-        }
+        renderQuestion(q);
+        showScreen('question');
 
       } else if (g.status === 'reveal') {
         handleReveal();
@@ -544,6 +570,9 @@
 
     // ── QUESTION ───────────────────────────────────────────
     function renderQuestion(q) {
+      const banner = document.getElementById('second-chance-banner');
+      banner.classList.toggle('visible', playerEliminated);
+
       document.getElementById('pq-progress').textContent = `Question ${q.question_index + 1}`;
       document.getElementById('pq-pct').textContent      = q.percentage + ' get this right';
       document.getElementById('pq-text').textContent     = q.text;
@@ -586,28 +615,36 @@
     function handleReveal() {
       if (!currentQuestion) return;
 
-      // Already eliminated from a previous round — stay in spectator view
-      if (playerEliminated) {
-        showScreen('spectator');
-        return;
-      }
-
       const isCorrect = selectedAnswer !== null && selectedAnswer === currentQuestion.correct_answer;
 
-      if (isCorrect) {
-        showScreen('reveal-correct');
+      if (!playerEliminated) {
+        // Active player
+        if (isCorrect) {
+          showScreen('reveal-correct');
+        } else {
+          playerEliminated = true;
+          document.getElementById('wrong-title').textContent = selectedAnswer
+            ? 'Wrong — Eliminated!'
+            : "Time's up — Eliminated!";
+          document.getElementById('wrong-sub').textContent = selectedAnswer
+            ? 'The correct answer was:'
+            : "You didn't answer. The correct answer was:";
+          document.getElementById('correct-answer-text').textContent = currentQuestion.correct_answer;
+          showScreen('reveal-wrong');
+        }
       } else {
-        playerEliminated = true;
-
-        document.getElementById('wrong-title').textContent = selectedAnswer
-          ? 'Wrong — Eliminated!'
-          : "Time's up — Eliminated!";
-        document.getElementById('wrong-sub').textContent = selectedAnswer
-          ? 'The correct answer was:'
-          : "You didn't answer. The correct answer was:";
-        document.getElementById('correct-answer-text').textContent = currentQuestion.correct_answer;
-
-        showScreen('reveal-wrong');
+        // Eliminated player — second chance result
+        if (isCorrect) {
+          playerEliminated = false;
+          showScreen('reveal-reinstated');
+        } else {
+          document.getElementById('wrong-title').textContent = selectedAnswer
+            ? 'So close — still out!'
+            : "No answer — still out!";
+          document.getElementById('wrong-sub').textContent = 'The correct answer was:';
+          document.getElementById('correct-answer-text').textContent = currentQuestion.correct_answer;
+          showScreen('reveal-wrong');
+        }
       }
     }
 
@@ -664,22 +701,18 @@
 
         currentQuestion = q;
 
-        if (playerEliminated) {
-          showScreen('spectator');
-        } else {
-          const { data: ans } = await db.from('answers')
-            .select()
-            .eq('player_id', playerId)
-            .eq('question_id', q.id)
-            .maybeSingle();
+        const { data: ans } = await db.from('answers')
+          .select()
+          .eq('player_id', playerId)
+          .eq('question_id', q.id)
+          .maybeSingle();
 
-          if (ans) {
-            selectedAnswer = ans.answer;
-            showScreen('answered');
-          } else {
-            renderQuestion(q);
-            showScreen('question');
-          }
+        if (ans) {
+          selectedAnswer = ans.answer;
+          showScreen('answered');
+        } else {
+          renderQuestion(q);
+          showScreen('question');
         }
 
       } else if (game.status === 'reveal') {
