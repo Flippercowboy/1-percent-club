@@ -342,6 +342,38 @@
     }
     .nobody-out { color: var(--green); font-weight: 600; font-size: 0.95rem; }
 
+    /* ── PLAYER ICONS ── */
+    .player-icons-wrap {
+      margin-bottom: 1.5rem;
+      padding: 1rem 1.25rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .player-icons-label {
+      font-family: 'MBCorpoSTitle', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.65rem;
+    }
+    .player-icons { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .player-icon { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; cursor: default; }
+    .player-icon svg { display: block; }
+    .player-icon.active svg    { fill: var(--accent); }
+    .player-icon.eliminated svg { fill: rgba(255,255,255,0.18); }
+    .player-icon-name {
+      font-size: 0.5rem;
+      max-width: 2.4rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-dim);
+      text-align: center;
+    }
+
     /* ── FINISHED SCREEN ── */
     .finished-wrap {
       min-height: 100vh;
@@ -539,6 +571,10 @@
     <div class="card" style="margin-bottom:1.5rem;">
       <h2>Eliminated This Round</h2>
       <div class="elim-list" id="reveal-elim-list"></div>
+    </div>
+    <div class="player-icons-wrap">
+      <div class="player-icons-label">Players</div>
+      <div class="player-icons" id="reveal-player-icons"></div>
     </div>
     <div style="text-align:right;">
       <button class="btn btn-primary btn-lg" id="btn-next">Next Question →</button>
@@ -850,6 +886,19 @@
       showScreen('reveal');
     }
 
+    function renderPlayerIcons() {
+      const PERSON = `<svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="7" r="4.5"/>
+        <path d="M3.5 21c0-4.694 3.806-8.5 8.5-8.5s8.5 3.806 8.5 8.5"/>
+      </svg>`;
+      document.getElementById('reveal-player-icons').innerHTML = players.map(p => `
+        <span class="player-icon ${p.eliminated ? 'eliminated' : 'active'}" title="${p.name}">
+          ${PERSON}
+          <span class="player-icon-name">${p.name}</span>
+        </span>
+      `).join('');
+    }
+
     function renderReveal(q, correctCount, eliminatedThisRound) {
       document.getElementById('reveal-q-text').textContent = q.text;
 
@@ -885,6 +934,8 @@
         nextBtn.textContent = 'Next Question →';
         nextBtn.onclick     = nextQuestion;
       }
+
+      renderPlayerIcons();
     }
 
     async function nextQuestion() {
