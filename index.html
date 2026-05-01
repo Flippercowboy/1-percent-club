@@ -712,7 +712,7 @@
       if (savedId) {
         try {
           const { data } = await db.from('games').select().eq('id', savedId).single();
-          if (data && data.status !== 'finished') {
+          if (data && (data.status === 'question' || data.status === 'reveal')) {
             await resumeGame(data);
             return;
           }
