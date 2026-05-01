@@ -554,6 +554,9 @@
             Start Game
           </button>
           <p class="lobby-hint" id="lobby-hint">Waiting for at least one player to join</p>
+          <button class="btn btn-secondary btn-full" style="margin-top:0.75rem;" onclick="backToSetup()">
+            ← Back to Setup
+          </button>
         </div>
       </div>
 
@@ -860,6 +863,14 @@
         })
         .subscribe();
       channels.push(ch);
+    }
+
+    // ── LOBBY ──────────────────────────────────────────────
+    function backToSetup() {
+      clearChannels();
+      renderQuestionList();
+      updateOpenLobbyBtn();
+      showScreen('setup');
     }
 
     // ── GAME FLOW ──────────────────────────────────────────
