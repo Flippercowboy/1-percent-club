@@ -236,6 +236,28 @@
     .q-text      { font-family: 'MBCorpoSTitle', sans-serif; font-size: 1.2rem; font-weight: 700; line-height: 1.45; }
 
     .name-footer { margin-top: auto; padding-top: 1rem; font-size: 0.85rem; color: var(--text-dim); text-align: center; }
+
+    /* ── NAME + RANDOMISE ── */
+    .name-input-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: stretch;
+    }
+    .name-input-row input { flex: 1; margin-bottom: 0; }
+    .btn-randomise {
+      flex-shrink: 0;
+      width: 3rem;
+      background: var(--bg-surface);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-randomise:hover { border-color: var(--accent); color: var(--accent); }
   </style>
 </head>
 <body>
@@ -252,7 +274,17 @@
     </div>
     <div class="form-group">
       <label>Your Name</label>
-      <input id="name-input" type="text" placeholder="Enter your name" maxlength="20" autocomplete="off">
+      <div class="name-input-row">
+        <input id="name-input" type="text" placeholder="Enter your name" maxlength="20" autocomplete="off">
+        <button type="button" class="btn-randomise" onclick="randomiseName()" title="Generate a random name">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 3 21 3 21 8"/>
+            <line x1="4" y1="20" x2="21" y2="3"/>
+            <polyline points="21 16 21 21 16 21"/>
+            <line x1="15" y1="15" x2="21" y2="21"/>
+          </svg>
+        </button>
+      </div>
     </div>
     <div class="error-msg" id="join-error"></div>
     <button class="btn btn-primary" id="btn-join" onclick="joinGame()">Join Game</button>
@@ -338,6 +370,26 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script>
+    // ── RANDOM NAME ────────────────────────────────────────
+    const NAME_ADJECTIVES = [
+      'Swift','Bold','Sleek','Quick','Calm','Sharp','Brave','Cool',
+      'Dark','Silver','Black','Turbo','Sonic','Steel','Bright','Slick',
+      'Grand','Rapid','Noble','Fierce',
+    ];
+    const NAME_NOUNS = [
+      // animals
+      'Falcon','Panther','Eagle','Wolf','Fox','Hawk','Tiger','Lynx',
+      'Cobra','Viper','Raven','Bear','Puma','Jaguar','Cheetah',
+      // MB models / references
+      'AMG','GLE','CLA','SLK','Maybach','Brabus','Kompressor','Pullman',
+      'Pagoda','Gullwing','Roadster','Cabriolet',
+    ];
+    function randomiseName() {
+      const adj  = NAME_ADJECTIVES[Math.floor(Math.random() * NAME_ADJECTIVES.length)];
+      const noun = NAME_NOUNS[Math.floor(Math.random() * NAME_NOUNS.length)];
+      document.getElementById('name-input').value = adj + noun;
+    }
+
     // ── DB CLIENT ──────────────────────────────────────────
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
