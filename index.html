@@ -223,6 +223,31 @@
     .no-questions { color: var(--text-dim); font-size: 0.9rem; text-align: center; padding: 2rem 0; }
     .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
 
+    /* ── PACK PICKER ── */
+    .pack-picker-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.5rem;
+    }
+    .pack-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .pack-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      text-align: left;
+    }
+    .pack-card:hover { border-color: var(--accent); background: rgba(0,141,252,0.05); }
+    .pack-card.loading { opacity: 0.45; pointer-events: none; }
+    .pack-card-name  { font-weight: 700; font-size: 0.88rem; margin-bottom: 0.2rem; }
+    .pack-card-desc  { font-size: 0.72rem; color: var(--text-dim); margin-bottom: 0.35rem; line-height: 1.35; }
+    .pack-card-count { font-size: 0.7rem; font-weight: 700; color: var(--accent); }
+
     /* ── LOBBY SCREEN ── */
     .lobby-grid { display: grid; grid-template-columns: auto 1fr; gap: 2rem; }
     .qr-panel { display: flex; flex-direction: column; align-items: center; text-align: center; }
@@ -479,9 +504,8 @@
             <button type="submit" class="btn btn-primary btn-full">+ Add Question</button>
           </form>
           <hr class="divider">
-          <button class="btn btn-secondary btn-full" id="btn-load-samples" onclick="loadSampleQuestions()">
-            Load 7 Sample Questions
-          </button>
+          <div class="pack-picker-label">Or load a question pack</div>
+          <div class="pack-grid" id="pack-grid"></div>
         </div>
       </div>
 
@@ -609,6 +633,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="question-packs.js"></script>
   <script src="config.js"></script>
   <script>
     // ── DB CLIENT ──────────────────────────────────────────
@@ -626,16 +651,36 @@
 
     const LABELS = ['A', 'B', 'C', 'D'];
 
-    // ── SAMPLE QUESTIONS ───────────────────────────────────
-    const SAMPLES = [
-      { text: 'What colour do you get when you mix blue and yellow?',    options: ['Purple','Orange','Green','Brown'],           correct_answer: 'Green',    percentage: '90%' },
-      { text: 'How many days are there in a leap year?',                 options: ['364','365','366','367'],                     correct_answer: '366',      percentage: '75%' },
-      { text: 'What is 15% of 80?',                                      options: ['10','12','14','16'],                         correct_answer: '12',        percentage: '50%' },
-      { text: 'What is the capital city of Australia?',                  options: ['Sydney','Melbourne','Brisbane','Canberra'],  correct_answer: 'Canberra', percentage: '30%' },
-      { text: 'How many hearts does an octopus have?',                   options: ['1','2','3','4'],                             correct_answer: '3',         percentage: '10%' },
-      { text: 'In which year did the Berlin Wall fall?',                 options: ['1987','1988','1989','1990'],                 correct_answer: '1989',     percentage: '5%'  },
-      { text: 'What is the only metal that is liquid at room temperature?', options: ['Lead','Tin','Mercury','Gallium'],         correct_answer: 'Mercury',  percentage: '1%'  },
-    ];
+    // ── PACK PICKER ────────────────────────────────────────
+    function renderPackPicker() {
+      document.getElementById('pack-grid').innerHTML = QUESTION_PACKS.map(pack => `
+        <button class="pack-card" id="pack-${pack.id}" onclick="loadPack('${pack.id}')">
+          <div class="pack-card-name">${pack.name}</div>
+          <div class="pack-card-desc">${pack.description}</div>
+          <div class="pack-card-count">${pack.questions.length} questions</div>
+        </button>
+      `).join('');
+    }
+
+    async function loadPack(packId) {
+      const pack = QUESTION_PACKS.find(p => p.id === packId);
+      if (!pack) return;
+
+      document.querySelectorAll('.pack-card').forEach(c => c.classList.add('loading'));
+
+      if (questions.length > 0) {
+        await db.from('questions').delete().eq('game_id', game.id);
+        questions = [];
+        renderQuestionList();
+        updateOpenLobbyBtn();
+      }
+
+      for (const q of pack.questions) {
+        await insertQuestion(q.text, q.options, q.correct_answer, q.percentage);
+      }
+
+      document.querySelectorAll('.pack-card').forEach(c => c.classList.remove('loading'));
+    }
 
     // ── HELPERS ────────────────────────────────────────────
     function showScreen(name) {
@@ -690,6 +735,7 @@
       document.getElementById('setup-code-label').textContent = 'Code: ' + game.game_code;
       renderQuestionList();
       updateOpenLobbyBtn();
+      renderPackPicker();
       showScreen('setup');
     }
 
@@ -722,16 +768,6 @@
       questions.push(data);
       renderQuestionList();
       updateOpenLobbyBtn();
-    }
-
-    async function loadSampleQuestions() {
-      const btn = document.getElementById('btn-load-samples');
-      btn.disabled = true;
-      btn.textContent = 'Loading…';
-      for (const q of SAMPLES) {
-        await insertQuestion(q.text, q.options, q.correct_answer, q.percentage);
-      }
-      btn.textContent = '✓ Samples loaded';
     }
 
     async function deleteQuestion(idx) {
