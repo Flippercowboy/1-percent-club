@@ -895,7 +895,7 @@
       document.getElementById('q-progress').textContent  = `Question ${currentQIdx + 1} of ${questions.length}`;
       document.getElementById('q-pct-label').textContent = q.percentage + ' of people get this right';
       document.getElementById('q-text').textContent      = q.text;
-      document.getElementById('answer-count').textContent = '0 / ' + players.length + ' answered';
+      document.getElementById('answer-count').textContent = '0 / ' + activePlayers().length + ' answered';
       answerCount = 0;
 
       document.getElementById('q-options').innerHTML = q.options.map((opt, i) => `
@@ -915,7 +915,7 @@
           if (currentQuestion && payload.new.question_id === currentQuestion.id) {
             answerCount++;
             document.getElementById('answer-count').textContent =
-              `${answerCount} / ${players.length} answered`;
+              `${answerCount} / ${activePlayers().length} answered`;
           }
         })
         .subscribe();

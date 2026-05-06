@@ -550,6 +550,13 @@
       if (g.status === 'question') {
         selectedAnswer = null;
 
+        // Sync eliminated status from DB to prevent state drift after reinstatements
+        const { data: freshPlayer } = await db.from('players')
+          .select('eliminated')
+          .eq('id', playerId)
+          .single();
+        if (freshPlayer) playerEliminated = freshPlayer.eliminated;
+
         const { data: q } = await db.from('questions')
           .select()
           .eq('game_id', gameId)
@@ -639,12 +646,8 @@
           playerEliminated = false;
           showScreen('reveal-reinstated');
         } else {
-          document.getElementById('wrong-title').textContent = selectedAnswer
-            ? 'So close — still out!'
-            : "No answer — still out!";
-          document.getElementById('wrong-sub').textContent = 'The correct answer was:';
-          document.getElementById('correct-answer-text').textContent = currentQuestion.correct_answer;
-          showScreen('reveal-wrong');
+          // Still eliminated — show spectator screen (they get another chance next question)
+          showScreen('spectator');
         }
       }
     }
